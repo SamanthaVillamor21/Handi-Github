@@ -1,0 +1,22 @@
+*Problem*
+
+During the testing phase of the checkout process, the application encountered a Fatal error: Uncought mysqli_sql_exception: Duplicate entry '0' for key 'PRIMARY' in C:\xampp\htdocs\HandiGithub\checkoutt.php:81.
+
+*Debugging Process* 
+
+First, tiningnan namin yung line 81 sa checkout.php. Wefound that this line contained the command $stmt_insert->execute();.
+Since yung line na 'yun ay walang syntax errors, we realized that the PHP code was correct, but yung database ay nire-reject ang data being sent to it.
+Yung term na "Duplicate entry '0'" was a key clue. It indicated that the database was trying to assign an ID of 0 to every new record. Sa realational database, dapat ang Primary Key ay unique.
+We used phpMyAdmin to inspect the orders table structure. By looking at the CREATE TABLE script and the Structure tab, na discoreved namin na yung Order_ID column was missing the AUTO_INCREMENT attribute.
+
+*Solution*
+
+Once we found the root cause, we followed a few steps to fix it. First, pumunta kami sa Browse tab ng phpMyAdmin and then we went to the Structure tab, clicked Change sa Order_ID column, and finally checked
+that small but life-saving A_I (Auto Increment) box. 
+
+Dahil meron na kaming mga existing orders (like Order #48), we didn't even need to manually set the starting number. Once we enabled A_I, the database was smart enough para tignan yung highest ID and automatically start the next order at 49.
+
+*Result*
+
+After saving the changes sa database, we went back to our system and tried checking out again. This time, the code on line 81 executed perfectly. The database finally understood that it was responsible for the numbering, not us. 
+We were so relieved and happy to finally see the "Order Placed Succesfully!" popup. We checked our database for one last time and saw that yung new orders ay naka list as Order #50 and Order #51, proving that the auto_increment fix the error and it worked perfectly. 
