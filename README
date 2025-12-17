@@ -1,3 +1,4 @@
+[CONGRATULATIONS!]
 *Problem*
 
 During the testing phase of the checkout process, the application encountered a Fatal error: Uncought mysqli_sql_exception: Duplicate entry '0' for key 'PRIMARY' in C:\xampp\htdocs\HandiGithub\checkoutt.php:81.
