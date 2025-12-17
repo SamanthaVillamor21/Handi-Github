@@ -1,7 +1,7 @@
 [CONGRATULATIONS!]
 *Problem*
 
-During the testing phase of the checkout process, the application encountered a Fatal error: Uncought mysqli_sql_exception: Duplicate entry '0' for key 'PRIMARY' in C:\xampp\htdocs\HandiGithub\checkoutt.php:81.
+During the testing phase of the checkout process, the application encountered a Fatal error: Uncought mysqli_sql_exception: Duplicate entry '0' for key 'PRIMARY' in C:\xampp\htdocs\HandiGithub\checkoutt.php:81. 
 
 *Debugging Process* 
 
@@ -21,3 +21,37 @@ Dahil meron na kaming mga existing orders (like Order #48), we didn't even need 
 
 After saving the changes sa database, we went back to our system and tried checking out again. This time, the code on line 81 executed perfectly. The database finally understood that it was responsible for the numbering, not us. 
 We were so relieved and happy to finally see the "Order Placed Succesfully!" popup. We checked our database for one last time and saw that yung new orders ay naka list as Order #50 and Order #51, proving that the auto_increment fix the error and it worked perfectly. 
+
+*PARASITE / TRIGGER BUG*
+
+Kahapon nahanap namin yung error sa system namin, ngayon naman yung parasite/trigger bug naman ang hinanap namin to make sure na maayos na talaga at hindi na pabalik-balik yung problem sa system namin.
+
+While inaayos namin ang AUTO_INCREMENT error, we asked ourselves kung "Bakit nga ba biglang nawala ang setting na ito sa aming database?" There we discovered na hindi lang pala ito simple error, kundi isang Security Parasite.
+
+Nakakita kami ng isang kakaibang <script> tag sa pinaka-ibaba ng aming login.html. Grabe yung pagkakatago nito dahil gumamit sila ng napakaraming blank spaces para hindi siya agad mapansin sa text editor. 
+
+So, nang i-decode namin yung script, lumabas ang SQL command na: ALTER TABLE orders MODIFY Order_ID INT NOT NULL. There nalaman namin na 'yun pala ang pasimuno why the AUTO_INCREMENT and naging "Duplicate entry '0'" ang error sa tuwing mag-che-checkout.
+
+We also discovered na ang script na ito ay may "ka-partner" na file inside the backgrounds/index.php. Ito yung nagsisilbing backdoor kung saan pwedeng mag-execute ng anumang SQL commands in our database nang hindi namin namamalayan. 
+
+*Solution*
+
+To make sure na talagang clean na ang aming system at hindi na mauulit ang pag sabotage, we made these steps:
+
+Agad naming binura ang hidden script sa login.html at ang backdoor file na index.php inside the backgrounds/ folder.
+
+Lalagyan sana namin ng .htaccess inside the backgrounds/ and uploads/ folder to make sure na hindi na talaga siya mapapasok o masisira ng mga parasites. Kaso hindi naman na daw kailangan lagyan ng .htaccess kaya hindi nalang namin nilagyan. 
+
+We also updated our login.php to remove yung mga security bypass. We made sure na tanging password_verify() function na lang ang ginagamit para sa authentication para walang "skeleton key" na pwedeng gamitin ang mga unauthorized users.  
+
+*Result*
+
+After our "cleanup operation", there are no "Duplicate entry '0'" error na lumalabas. Dahil naibalik ang AUTO_INCREMENT, ang database na mismo ang bahalang mag-assign ng unique Order ID every new transactions. 
+
+We also tried refreshing for how many times yung system namin and luckily hindi na bumalik yung index.php inside the backgrounds/ folder. That means we successfully kill yung "Dropper" script. 
+
+Kahit subukan naming i-access ang anumang .php file sa loob ng image folders, hinarang na ito ng server. Our login system ay hindi na rin pwedeng ma-bypass gamit ang password hashes.
+
+*Reflection*
+
+This experience teach us that being a developer ay hindi lang tungkol sa paggawa ng features. Web Security and Root Cause Analysis are also important. Akala namin ay simple coding error lang ang problem, but because of being mausisa, nahanap namin ang tunay na "parasite." Now, we are condifent that our Local Handicraft Botique system ay not h=only functional, but also "Safe and Secured" para sa aming mga users.
